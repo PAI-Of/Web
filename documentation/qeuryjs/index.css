@@ -1,0 +1,20 @@
+* {
+    font-family: 'JetBrains mono', monospace;
+}
+body {
+    background-color: #111;
+    color: #eee;
+}
+#herocon {
+    display: flex;
+}
+#cta {
+    background-color: #d900d9;
+    border-width: 0;
+    padding: 5px;
+    padding-right: 7px;
+    padding-left: 7px;
+    border-radius: 50px;
+    width: 150px;
+    height: 40px;
+}

@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JS Notebook</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/ace.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/mode-javascript.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/theme-monokai.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .toolbar {
+            display: flex;
+            padding: 10px;
+            background-color: #333;
+            color: white;
+            align-items: center;
+        }
+        
+        .toolbar h1 {
+            margin-right: 20px;
+            font-size: 18px;
+        }
+        
+        .toolbar button {
+            background-color: #555;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            margin-right: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .toolbar button:hover {
+            background-color: #777;
+        }
+        
+        .toolbar input {
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: none;
+            margin-right: 10px;
+            font-size: 14px;
+            width: 200px;
+        }
+        
+        .main {
+            display: flex;
+            height: calc(100vh - 140px);
+        }
+        
+        .editor-container {
+            flex: 1;
+            position: relative;
+            border-right: 1px solid #ddd;
+        }
+        
+        #editor {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            font-size: 10px;
+            font-family: "OCR-B-BT", "OCR B", monospace;
+        }
+        
+        .output-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .output-header {
+            padding: 10px;
+            background-color: #eee;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .output-header button {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .output-header button:hover {
+            background-color: #555;
+        }
+        
+        #output {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+            font-family: monospace;
+        }
+        
+        .debug-container {
+            padding: 10px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .debug-container input {
+            width: calc(100% - 120px);
+            padding: 6px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .debug-container button {
+            padding: 6px 10px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .debug-container button:hover {
+            background-color: #555;
+        }
+        
+        .status-bar {
+            padding: 8px 15px;
+            background-color: #333;
+            color: white;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .fn-test-container {
+            margin-top: 10px;
+        }
+        
+        .fn-test-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            padding: 6px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+        
+        .fn-test-checkbox {
+            width: 16px;
+            height: 16px;
+            margin-right: 10px;
+            cursor: pointer;
+            border: 1px solid #999;
+            background-color: white;
+            display: inline-block;
+            position: relative;
+        }
+        
+        .fn-test-checkbox.checked:after {
+            content: "✓";
+            position: absolute;
+            top: -2px;
+            left: 2px;
+            font-weight: bold;
+        }
+        
+        .fn-test-input {
+            flex: 1;
+            padding: 4px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        
+        .fn-test-result {
+            min-width: 100px;
+            font-weight: bold;
+        }
+        
+        #fileInput {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="toolbar">
+            <h1>JSN Web</h1>
+            <button id="newBtn">New</button>
+            <button id="openBtn">Open</button>
+            <button id="saveBtn">Save</button>
+            <button id="downloadBtn">Download</button>
+            <input type="text" id="filename" placeholder="Filename" value="untitled.js">
+            <input type="file" id="fileInput" accept=".js">
+        </div>
+        
+        <div class="main">
+            <div class="editor-container">
+                <div id="editor">// Welcome to JS Notebook
+// Write your JavaScript code here
+
+function add(a, b) {
+  return a + b;
+}
+
+// Use console.log to see output
+console.log("Hello World!");
+</div>
+            </div>
+            
+            <div class="output-container">
+                <div class="output-header">
+                    <span>Output</span>
+                    <button id="runBtn">Run Code</button>
+                    <button id="clearBtn">Clear</button>
+                </div>
+                <div id="output"></div>
+                <div class="debug-container">
+                    <div>
+                        <input type="text" id="debugInput" placeholder="Test expression (e.g. add(1, 2))">
+                        <button id="testBtn">Test</button>
+                    </div>
+                    <div id="functionTests" class="fn-test-container"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="status-bar">
+            <span id="status">Ready</span>
+            <span id="time"></span>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Ace editor
+        const editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.session.setMode("ace/mode/javascript");
+        editor.setOptions({
+            fontSize: "10pt",
+            fontFamily: "OCR-B-BT-10, 'OCR B', monospace",
+            showPrintMargin: false,
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: true
+        });
+        
+        // DOM elements
+        const outputElement = document.getElementById('output');
+        const runButton = document.getElementById('runBtn');
+        const clearButton = document.getElementById('clearBtn');
+        const testButton = document.getElementById('testBtn');
+        const debugInput = document.getElementById('debugInput');
+        const functionTests = document.getElementById('functionTests');
+        const statusElement = document.getElementById('status');
+        const timeElement = document.getElementById('time');
+        const newButton = document.getElementById('newBtn');
+        const openButton = document.getElementById('openBtn');
+        const saveButton = document.getElementById('saveBtn');
+        const downloadButton = document.getElementById('downloadBtn');
+        const filenameInput = document.getElementById('filename');
+        const fileInput = document.getElementById('fileInput');
+        
+        // Console log override
+        const originalConsoleLog = console.log;
+        console.log = function() {
+            originalConsoleLog.apply(console, arguments);
+            
+            const args = Array.from(arguments);
+            const message = args.map(arg => {
+                if (typeof arg === 'object') {
+                    try {
+                        return JSON.stringify(arg, null, 2);
+                    } catch (e) {
+                        return arg.toString();
+                    }
+                } else {
+                    return arg;
+                }
+            }).join(' ');
+            
+            const logElement = document.createElement('div');
+            logElement.textContent = message;
+            outputElement.appendChild(logElement);
+        };
+        
+        // Run code function
+        function runCode() {
+            clearOutput();
+            updateStatus('Running...');
+            
+            const code = editor.getValue();
+            const startTime = performance.now();
+            
+            try {
+                // Execute the code
+                eval(code);
+                
+                // Extract function names for testing
+                extractFunctions(code);
+                
+                const endTime = performance.now();
+                updateStatus('Success', `Execution time: ${(endTime - startTime).toFixed(2)}ms`);
+            } catch (error) {
+                console.log(`Error: ${error.message}`);
+                updateStatus('Error', error.message);
+            }
+        }
+        
+        function clearOutput() {
+            outputElement.innerHTML = '';
+        }
+        
+        function updateStatus(status, time = '') {
+            statusElement.textContent = status;
+            timeElement.textContent = time;
+        }
+        
+        // Extract functions for testing
+        function extractFunctions(code) {
+            functionTests.innerHTML = '';
+            
+            // Simple regex to find function declarations
+            const functionRegex = /function\s+([a-zA-Z_$][0-9a-zA-Z_$]*)\s*\(/g;
+            let match;
+            const foundFunctions = new Set();
+            
+            while ((match = functionRegex.exec(code)) !== null) {
+                const functionName = match[1];
+                if (!foundFunctions.has(functionName)) {
+                    foundFunctions.add(functionName);
+                    createFunctionTest(functionName);
+                }
+            }
+            
+            // Also look for ES6 style functions
+            const es6FunctionRegex = /const\s+([a-zA-Z_$][0-9a-zA-Z_$]*)\s*=\s*(?:function|\([^)]*\)\s*=>)/g;
+            while ((match = es6FunctionRegex.exec(code)) !== null) {
+                const functionName = match[1];
+                if (!foundFunctions.has(functionName)) {
+                    foundFunctions.add(functionName);
+                    createFunctionTest(functionName);
+                }
+            }
+        }
+        
+        function createFunctionTest(functionName) {
+            const testItem = document.createElement('div');
+            testItem.className = 'fn-test-item';
+            
+            const checkbox = document.createElement('div');
+            checkbox.className = 'fn-test-checkbox';
+            checkbox.dataset.function = functionName;
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'fn-test-input';
+            input.value = `${functionName}()`;
+            input.placeholder = `Test ${functionName}`;
+            
+            const result = document.createElement('div');
+            result.className = 'fn-test-result';
+            
+            testItem.appendChild(checkbox);
+            testItem.appendChild(input);
+            testItem.appendChild(result);
+            
+            functionTests.appendChild(testItem);
+            
+            checkbox.addEventListener('click', function() {
+                this.classList.toggle('checked');
+                if (this.classList.contains('checked')) {
+                    testFunction(input, result);
+                } else {
+                    result.textContent = '';
+                }
+            });
+            
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkbox.classList.add('checked');
+                    testFunction(input, result);
+                }
+            });
+        }
+        
+        function testFunction(inputElement, resultElement) {
+            const expression = inputElement.value;
+            try {
+                const output = eval(expression);
+                resultElement.textContent = output;
+                resultElement.style.color = '#009900';
+            } catch (error) {
+                resultElement.textContent = error.message;
+                resultElement.style.color = '#cc0000';
+            }
+        }
+        
+        // Debug input test
+        function testDebugInput() {
+            const expression = debugInput.value;
+            
+            if (!expression.trim()) return;
+            
+            const logElement = document.createElement('div');
+            logElement.innerHTML = `<strong>Test:</strong> ${expression}`;
+            
+            try {
+                const result = eval(expression);
+                logElement.innerHTML += `<br><strong>Result:</strong> ${result}`;
+                logElement.style.color = '#009900';
+            } catch (error) {
+                logElement.innerHTML += `<br><strong>Error:</strong> ${error.message}`;
+                logElement.style.color = '#cc0000';
+            }
+            
+            outputElement.appendChild(logElement);
+            outputElement.scrollTop = outputElement.scrollHeight;
+            debugInput.value = '';
+        }
+        
+        // File operations
+        function newNotebook() {
+            if (confirm('Create new notebook? Unsaved changes will be lost.')) {
+                editor.setValue('// Welcome to JS Notebook\n// Write your JavaScript code here\n\n');
+                clearOutput();
+                filenameInput.value = 'untitled.js';
+                updateStatus('New notebook created');
+            }
+        }
+        
+        function openNotebook() {
+            fileInput.click();
+        }
+        
+        function saveNotebook() {
+            const filename = filenameInput.value || 'untitled.js';
+            const code = editor.getValue();
+            
+            // Save to localStorage
+            localStorage.setItem('jsnotebook_' + filename, code);
+            updateStatus(`Saved to localStorage as "${filename}"`);
+        }
+        
+        function downloadNotebook() {
+            const filename = filenameInput.value || 'untitled.js';
+            const code = editor.getValue();
+            
+            const blob = new Blob([code], { type: 'text/javascript' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            updateStatus(`Downloaded as "${filename}"`);
+        }
+        
+        // Load from localStorage on start
+        function loadSavedNotebooks() {
+            const savedFiles = [];
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('jsnotebook_')) {
+                    savedFiles.push(key.replace('jsnotebook_', ''));
+                }
+            }
+            
+            if (savedFiles.length > 0) {
+                const filename = savedFiles[0];
+                if (confirm(`Load saved notebook "${filename}" from localStorage?`)) {
+                    editor.setValue(localStorage.getItem('jsnotebook_' + filename) || '');
+                    filenameInput.value = filename;
+                    updateStatus(`Loaded "${filename}" from localStorage`);
+                }
+            }
+        }
+        
+        // Event Listeners
+        runButton.addEventListener('click', runCode);
+        clearButton.addEventListener('click', clearOutput);
+        testButton.addEventListener('click', testDebugInput);
+        debugInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') testDebugInput();
+        });
+        
+        newButton.addEventListener('click', newNotebook);
+        openButton.addEventListener('click', openNotebook);
+        saveButton.addEventListener('click', saveNotebook);
+        downloadButton.addEventListener('click', downloadNotebook);
+        
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    editor.setValue(e.target.result);
+                    filenameInput.value = file.name;
+                    updateStatus(`Opened "${file.name}"`);
+                };
+                reader.readAsText(file);
+            }
+        });
+        
+        // Load on startup
+        window.addEventListener('load', function() {
+            loadSavedNotebooks();
+            runCode(); // Run initial code
+        });
+    </script>
+</body>
+</html>
