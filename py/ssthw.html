@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Progress</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains mono', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+
+        .page {
+            display: none;
+            min-height: 100vh;
+            padding: 20px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .page.active {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .header-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+
+        .header-section h1 {
+            font-size: 3rem;
+            color: #000000;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+        }
+
+        .header-section p {
+            font-size: 1.5rem;
+            color: #000;
+            text-transform: capitalize;
+        }
+
+        .image-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .image-section img {
+            max-width: 80%;
+            max-height: 80%;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .calendar-section {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+        }
+
+        .calendar {
+            width: 100%;
+            height: 100%;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            height: calc(100% - 40px);
+        }
+
+        .calendar-day {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .calendar-day:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .calendar-day.today {
+            background: rgba(255, 255, 255, 0.3);
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .facts-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            position: relative;
+        }
+
+        .facts-title {
+            color: rgb(0, 0, 0);
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .fact-item {
+            background: #dcdcdc;
+            padding: 15px;
+            border-radius: 10px;
+            color: rgb(0, 0, 0);
+            border-left: 4px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .fact-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .fact-number {
+            font-weight: bold;
+            color: #000000;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .next-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #fefefe;
+            backdrop-filter: blur(10px);
+            border: 2px solid #3f3f3f;
+            border-radius: 50%;
+            color: #000;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .next-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .next-btn:active {
+            transform: scale(0.95);
+        }
+
+        .hidden-page {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .page.active {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 300px 350px;
+            }
+            
+            .header-section h1 {
+                font-size: 2rem;
+            }
+            
+            .header-section p {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page 1 -->
+    <div class="page active" id="page1">
+        <div class="image-section">
+            <img id="page-image" src="https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-01.png" alt="Month Image">
+        </div>
+        
+        <div class="header-section">
+            <h1 id="page-title">Month 1</h1>
+            <p id="page-subtitle">month a</p>
+        </div>
+        
+        <div class="calendar-section">
+            <div class="calendar">
+                <div class="calendar-header">
+                    <span id="calendar-month">January 2025</span>
+                </div>
+                <div class="calendar-grid" id="calendar-grid">
+                    <!-- Calendar days will be generated by JavaScript -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="facts-section">
+            <div class="facts-title">Facts</div>
+            <div id="facts-container">
+                <!-- Facts will be populated by JavaScript -->
+            </div>
+            <button class="next-btn" onclick="nextPage()">&gt;</button>
+        </div>
+    </div>
+
+    <!-- Page 2 -->
+    <div class="page" id="page2">
+        <div class="image-section">
+            <img id="page-image-2" src="https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-02.png" alt="Month Image">
+        </div>
+        
+        <div class="header-section">
+            <h1 id="page-title-2">Month 2</h1>
+            <p id="page-subtitle-2">month b</p>
+        </div>
+        
+        <div class="calendar-section">
+            <div class="calendar">
+                <div class="calendar-header">
+                    <span id="calendar-month-2">February 2025</span>
+                </div>
+                <div class="calendar-grid" id="calendar-grid-2">
+                    <!-- Calendar days will be generated by JavaScript -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="facts-section">
+            <div class="facts-title">Facts</div>
+            <div id="facts-container-2">
+                <!-- Facts will be populated by JavaScript -->
+            </div>
+            <button class="next-btn" onclick="nextPage()">&gt;</button>
+        </div>
+    </div>
+
+    <!-- Page 3 -->
+    <div class="page" id="page3">
+        <div class="image-section">
+            <img id="page-image-3" src="https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-03.png" alt="Month Image">
+        </div>
+        
+        <div class="header-section">
+            <h1 id="page-title-3">Month 3</h1>
+            <p id="page-subtitle-3">month c</p>
+        </div>
+        
+        <div class="calendar-section">
+            <div class="calendar">
+                <div class="calendar-header">
+                    <span id="calendar-month-3">March 2025</span>
+                </div>
+                <div class="calendar-grid" id="calendar-grid-3">
+                    <!-- Calendar days will be generated by JavaScript -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="facts-section">
+            <div class="facts-title">Facts</div>
+            <div id="facts-container-3">
+                <!-- Facts will be populated by JavaScript -->
+            </div>
+            <button class="next-btn" onclick="nextPage()">&gt;</button>
+        </div>
+    </div>
+  <!-- Page 4 -->
+<div class="page" id="page4">
+    <div class="image-section">
+        <img id="page-image-4" src="https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-04.png " alt="Month Image">
+    </div>
+    
+    <div class="header-section">
+        <h1 id="page-title-4">Month 4</h1>
+        <p id="page-subtitle-4">month d</p>
+    </div>
+    
+    <div class="calendar-section">
+        <div class="calendar">
+            <div class="calendar-header">
+                <span id="calendar-month-4">April 2025</span>
+            </div>
+            <div class="calendar-grid" id="calendar-grid-4">
+                <!-- Calendar days will be generated by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="facts-section">
+        <div class="facts-title">Facts</div>
+        <div id="facts-container-4">
+            <!-- Facts will be populated by JavaScript -->
+        </div>
+        <button class="next-btn" onclick="nextPage()">></button>
+    </div>
+</div>
+
+<!-- Page 5 -->
+<div class="page" id="page5">
+    <div class="image-section">
+        <img id="page-image-5" src="https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-05.png " alt="Month Image">
+    </div>
+    
+    <div class="header-section">
+        <h1 id="page-title-5">Month 5</h1>
+        <p id="page-subtitle-5">month e</p>
+    </div>
+    
+    <div class="calendar-section">
+        <div class="calendar">
+            <div class="calendar-header">
+                <span id="calendar-month-5">May 2025</span>
+            </div>
+            <div class="calendar-grid" id="calendar-grid-5">
+                <!-- Calendar days will be generated by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="facts-section">
+        <div class="facts-title">Facts</div>
+        <div id="facts-container-5">
+            <!-- Facts will be populated by JavaScript -->
+        </div>
+        <button class="next-btn" onclick="nextPage()">></button>
+    </div>
+</div>
+
+<!-- Page 6 -->
+<div class="page" id="page6">
+    <div class="image-section">
+        <img id="page-image-6" src="https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-06.png " alt="Month Image">
+    </div>
+    
+    <div class="header-section">
+        <h1 id="page-title-6">Month 6</h1>
+        <p id="page-subtitle-6">month f</p>
+    </div>
+    
+    <div class="calendar-section">
+        <div class="calendar">
+            <div class="calendar-header">
+                <span id="calendar-month-6">June 2025</span>
+            </div>
+            <div class="calendar-grid" id="calendar-grid-6">
+                <!-- Calendar days will be generated by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="facts-section">
+        <div class="facts-title">Facts</div>
+        <div id="facts-container-6">
+            <!-- Facts will be populated by JavaScript -->
+        </div>
+        <button class="next-btn" onclick="nextPage()">></button>
+    </div>
+</div>
+
+<!-- Page 7 -->
+<div class="page" id="page7">
+    <div class="image-section">
+        <img id="page-image-7" src="https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-07.png " alt="Month Image">
+    </div>
+    
+    <div class="header-section">
+        <h1 id="page-title-7">Month 7</h1>
+        <p id="page-subtitle-7">month g</p>
+    </div>
+    
+    <div class="calendar-section">
+        <div class="calendar">
+            <div class="calendar-header">
+                <span id="calendar-month-7">July 2025</span>
+            </div>
+            <div class="calendar-grid" id="calendar-grid-7">
+                <!-- Calendar days will be generated by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="facts-section">
+        <div class="facts-title">Facts</div>
+        <div id="facts-container-7">
+            <!-- Facts will be populated by JavaScript -->
+        </div>
+        <button class="next-btn" onclick="nextPage()">></button>
+    </div>
+</div>
+
+<!-- Page 8 -->
+<div class="page" id="page8">
+    <div class="image-section">
+        <img id="page-image-8" src="https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-08.png " alt="Month Image">
+    </div>
+    
+    <div class="header-section">
+        <h1 id="page-title-8">Month 8</h1>
+        <p id="page-subtitle-8">month h</p>
+    </div>
+    
+    <div class="calendar-section">
+        <div class="calendar">
+            <div class="calendar-header">
+                <span id="calendar-month-8">August 2025</span>
+            </div>
+            <div class="calendar-grid" id="calendar-grid-8">
+                <!-- Calendar days will be generated by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="facts-section">
+        <div class="facts-title">Facts</div>
+        <div id="facts-container-8">
+            <!-- Facts will be populated by JavaScript -->
+        </div>
+        <button class="next-btn" onclick="nextPage()">></button>
+    </div>
+</div>
+
+<!-- Page 9 -->
+<div class="page" id="page9">
+    <div class="image-section">
+        <img id="page-image-9" src="https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-09.png " alt="Month Image">
+    </div>
+    
+    <div class="header-section">
+        <h1 id="page-title-9">Month 9</h1>
+        <p id="page-subtitle-9">month i</p>
+    </div>
+    
+    <div class="calendar-section">
+        <div class="calendar">
+            <div class="calendar-header">
+                <span id="calendar-month-9">September 2025</span>
+            </div>
+            <div class="calendar-grid" id="calendar-grid-9">
+                <!-- Calendar days will be generated by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="facts-section">
+        <div class="facts-title">Facts</div>
+        <div id="facts-container-9">
+            <!-- Facts will be populated by JavaScript -->
+        </div>
+        <button class="next-btn" onclick="nextPage()">></button>
+    </div>
+</div>
+
+<!-- Page 10 -->
+<div class="page" id="page10">
+    <div class="image-section">
+        <img id="page-image-10" src="https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-10.png " alt="Month Image">
+    </div>
+    
+    <div class="header-section">
+        <h1 id="page-title-10">Month 10</h1>
+        <p id="page-subtitle-10">month j</p>
+    </div>
+    
+    <div class="calendar-section">
+        <div class="calendar">
+            <div class="calendar-header">
+                <span id="calendar-month-10">October 2025</span>
+            </div>
+            <div class="calendar-grid" id="calendar-grid-10">
+                <!-- Calendar days will be generated by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="facts-section">
+        <div class="facts-title">Facts</div>
+        <div id="facts-container-10">
+            <!-- Facts will be populated by JavaScript -->
+        </div>
+        <button class="next-btn" onclick="nextPage()">></button>
+    </div>
+</div>
+
+<!-- Page 11 -->
+<div class="page" id="page11">
+    <div class="image-section">
+        <img id="page-image-11" src="https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-11.png " alt="Month Image">
+    </div>
+    
+    <div class="header-section">
+        <h1 id="page-title-11">Month 11</h1>
+        <p id="page-subtitle-11">month k</p>
+    </div>
+    
+    <div class="calendar-section">
+        <div class="calendar">
+            <div class="calendar-header">
+                <span id="calendar-month-11">November 2025</span>
+            </div>
+            <div class="calendar-grid" id="calendar-grid-11">
+                <!-- Calendar days will be generated by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="facts-section">
+        <div class="facts-title">Facts</div>
+        <div id="facts-container-11">
+            <!-- Facts will be populated by JavaScript -->
+        </div>
+        <button class="next-btn" onclick="nextPage()">></button>
+    </div>
+</div>
+
+<!-- Page 12 -->
+<div class="page" id="page12">
+    <div class="image-section">
+        <img id="page-image-12" src="https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-12.png " alt="Month Image">
+    </div>
+    
+    <div class="header-section">
+        <h1 id="page-title-12">Month 12</h1>
+        <p id="page-subtitle-12">month l</p>
+    </div>
+    
+    <div class="calendar-section">
+        <div class="calendar">
+            <div class="calendar-header">
+                <span id="calendar-month-12">December 2025</span>
+            </div>
+            <div class="calendar-grid" id="calendar-grid-12">
+                <!-- Calendar days will be generated by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="facts-section">
+        <div class="facts-title">Facts</div>
+        <div id="facts-container-12">
+            <!-- Facts will be populated by JavaScript -->
+        </div>
+        <button class="next-btn" onclick="nextPage()">></button>
+    </div>
+</div>
+
+    <script>
+const pages = {
+    1: {
+        "header": "Month 1",
+        "subtitle": "Goal 1: No Poverty",
+        "image": "https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-01.png ",
+        "facts": {
+            1: "Support local charities and organizations helping people escape poverty.",
+            2: "Advocate for fair wages and inclusive economic policies in your community."
+        },
+        "gradient": ["to right", "#452424", "#353566"]
+    },
+    2: {
+        "header": "Month 2",
+        "subtitle": "Goal 2: Zero Hunger",
+        "image": "https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-02.png ",
+        "facts": {
+            1: "Reduce food waste by planning meals and donating unused food.",
+            2: "Promote sustainable farming practices and support local farmers."
+        },
+        "gradient": ["to right", "#DDA63A", "#CC6A10"]
+    },
+    3: {
+        "header": "Month 3",
+        "subtitle": "Goal 3: Good Health and Well-being",
+        "image": "https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-03.png ",
+        "facts": {
+            1: "Encourage regular health check-ups and mental health awareness.",
+            2: "Promote healthy habits like physical activity and balanced nutrition."
+        },
+        "gradient": ["to right", "#4C9F38", "#2E7D32"]
+    },
+    4: {
+        "header": "Month 4",
+        "subtitle": "Goal 4: Quality Education",
+        "image": "https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-04.png ",
+        "facts": {
+            1: "Volunteer as a tutor or mentor to students in need.",
+            2: "Support digital learning tools to make education more accessible globally."
+        },
+        "gradient": ["to right", "#FFA726", "#FB8C00"]
+    },
+    5: {
+        "header": "Month 5",
+        "subtitle": "Goal 5: Gender Equality",
+        "image": "https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-05.png ",
+        "facts": {
+            1: "Challenge gender stereotypes and promote equal opportunities at work and home.",
+            2: "Support women-led businesses and advocate for equal pay."
+        },
+        "gradient": ["to right", "#EC407A", "#AB47BC"]
+    },
+    6: {
+        "header": "Month 6",
+        "subtitle": "Goal 6: Clean Water and Sanitation",
+        "image": "https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-06.png ",
+        "facts": {
+            1: "Conserve water daily and fix leaks to reduce wastage.",
+            2: "Support NGOs providing clean water access to underserved communities."
+        },
+        "gradient": ["to right", "#26C6DA", "#00ACC1"]
+    },
+    7: {
+        "header": "Month 7",
+        "subtitle": "Goal 7: Affordable and Clean Energy",
+        "image": "https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-07.png ",
+        "facts": {
+            1: "Switch to LED lighting and energy-efficient appliances.",
+            2: "Invest in renewable energy solutions like solar panels or wind power."
+        },
+        "gradient": ["to right", "#FFB300", "#F57C00"]
+    },
+    8: {
+        "header": "Month 8",
+        "subtitle": "Goal 8: Decent Work and Economic Growth",
+        "image": "https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-08.png ",
+        "facts": {
+            1: "Promote entrepreneurship and support small businesses.",
+            2: "Advocate for safe working conditions and fair employment practices."
+        },
+        "gradient": ["to right", "#66BB6A", "#43A047"]
+    },
+    9: {
+        "header": "Month 9",
+        "subtitle": "Goal 9: Industry, Innovation and Infrastructure",
+        "image": "https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-09.png ",
+        "facts": {
+            1: "Support STEM education and innovation hubs in your area.",
+            2: "Promote green infrastructure and sustainable industrial growth."
+        },
+        "gradient": ["to right", "#42A5F5", "#1E88E5"]
+    },
+    10: {
+        "header": "Month 10",
+        "subtitle": "Goal 10: Reduced Inequalities",
+        "image": "https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-10.png ",
+        "facts": {
+            1: "Promote inclusion and diversity in workplaces and schools.",
+            2: "Support initiatives that provide opportunities for marginalized groups."
+        },
+        "gradient": ["to right", "#BA68C8", "#8E44AD"]
+    },
+    11: {
+        "header": "Month 11",
+        "subtitle": "Goal 11: Sustainable Cities and Communities",
+        "image": "https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-11.png ",
+        "facts": {
+            1: "Use public transport, carpool, or bike to reduce urban pollution.",
+            2: "Support eco-friendly urban planning and green building projects."
+        },
+        "gradient": ["to right", "#7986CB", "#3949AB"]
+    },
+    12: {
+        "header": "Month 12",
+        "subtitle": "Goal 12: Responsible Consumption and Production",
+        "image": "https://www.un.org/sustainabledevelopment/wp-content/uploads/2018/05/E_SDG-goals_icons-individual-rgb-12.png ",
+        "facts": {
+            1: "Buy locally produced goods and avoid single-use plastics.",
+            2: "Recycle properly and choose products with minimal packaging."
+        },
+        "gradient": ["to right", "#26A69A", "#00796B"]
+    }
+};
+
+        let currentPage = 1;
+        let totalPages = 12;
+        let hiddenPageReached = false;
+
+        function generateCalendar(month, year, containerId) {
+            const container = document.getElementById(containerId);
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const firstDay = new Date(year, month - 1, 1).getDay();
+            const today = new Date().getDate();
+            const currentMonth = new Date().getMonth() + 1;
+            
+            container.innerHTML = '';
+            
+            // Add day headers
+            const dayHeaders = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+            dayHeaders.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'calendar-day';
+                dayHeader.textContent = day;
+                dayHeader.style.fontWeight = 'bold';
+                dayHeader.style.background = 'rgba(255, 255, 255, 0.2)';
+                container.appendChild(dayHeader);
+            });
+            
+            // Add empty cells for days before the first day of the month
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day';
+                container.appendChild(emptyDay);
+            }
+            
+            // Add days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                dayElement.textContent = day;
+                
+                if (day === today && month === currentMonth) {
+                    dayElement.classList.add('today');
+                }
+                
+                container.appendChild(dayElement);
+            }
+        }
+
+        function setPageGradient(pageNum) {
+            const page = document.getElementById(`page${pageNum}`);
+            const gradient = pages[pageNum].gradient;
+            page.style.background = `linear-gradient(${gradient[0]}, ${gradient[1]}, ${gradient[2]})`;
+        }
+
+        function populatePage(pageNum) {
+            const pageData = pages[pageNum];
+            if (!pageData) return;
+            
+            // Update content
+            document.getElementById(`page-title${pageNum > 1 ? '-' + pageNum : ''}`).textContent = pageData.header;
+            document.getElementById(`page-subtitle${pageNum > 1 ? '-' + pageNum : ''}`).textContent = pageData.subtitle;
+            document.getElementById(`page-image${pageNum > 1 ? '-' + pageNum : ''}`).src = pageData.image;
+            
+            // Populate facts
+            const factsContainer = document.getElementById(`facts-container${pageNum > 1 ? '-' + pageNum : ''}`);
+            factsContainer.innerHTML = '';
+            
+            Object.entries(pageData.facts).forEach(([key, value]) => {
+                const factItem = document.createElement('div');
+                factItem.className = 'fact-item';
+                factItem.innerHTML = `
+                    <div class="fact-number">Fact ${key}</div>
+                    <div>${value}</div>
+                `;
+                factsContainer.appendChild(factItem);
+            });
+            
+            // Set gradient
+            setPageGradient(pageNum);
+            
+            // Generate calendar
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            document.getElementById(`calendar-month${pageNum > 1 ? '-' + pageNum : ''}`).textContent = `${monthNames[pageNum - 1]} 2025`;
+            generateCalendar(pageNum, 2025, `calendar-grid${pageNum > 1 ? '-' + pageNum : ''}`);
+        }
+
+        function nextPage() {
+        currentPage++;
+        if (currentPage > totalPages) {
+            currentPage = 1;
+        }
+        
+        // Hide current page
+        document.querySelectorAll('.page').forEach(page => {
+            page.classList.remove('active');
+        });
+            
+            // Show next page
+            document.getElementById(`page${currentPage}`).classList.add('active');
+        }
+
+        // Initialize the website
+        function init() {
+            // Populate all pages
+            for (let i = 1; i <= 12; i++) {
+                populatePage(i);
+            }
+        }
+
+        // Run initialization when page loads
+        window.addEventListener('load', init);
+	window.addEventListener("wheel", function(e) {
+		e.preventDefault(); // Prevent default scroll
+		window.scrollBy({
+			top: e.deltaY * 2, // You can multiply this for faster/slower scroll
+			behavior: "smooth"
+		});
+	}, { passive: false });
+    </script>
+</body>
+</html>
