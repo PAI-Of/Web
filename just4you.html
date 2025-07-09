@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Just for you | ✨</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #000;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Comfortaa', sans-serif;
+      padding: 1rem;
+    }
+
+    #msg {
+      font-size: clamp(2rem, 10vw, 8rem);
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.2;
+      word-break: break-word;
+      background: linear-gradient(90deg, #00f0ff, #ff00c8, #f6ff00);
+      background-size: 400% 400%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradientFlow 6s ease infinite;
+      opacity: 0;
+      transform: scale(0.7);
+    }
+
+    @keyframes gradientFlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
+</head>
+<body>
+  <h1 id="msg">This</h1>
+  <script src="anime.min.js"></script>
+  <script>
+    const words = [
+      "This",
+      "moment",
+      "only",
+      "opens",
+      "for",
+      "someone",
+      "who’s",
+      "truly",
+      "rare.",
+      "✨",
+      ""
+    ];
+
+    const msg = document.getElementById("msg");
+
+    words.forEach((word, index) => {
+      setTimeout(() => {
+        anime({
+          targets: msg,
+          opacity: [0, 1],
+          scale: [0.7, 1],
+          duration: 500,
+          easing: "easeOutExpo",
+          begin: () => {
+            msg.innerText = word;
+          }
+        });
+      }, index * 1000);
+    });
+  </script>
+</body>
+</html>
