@@ -341,23 +341,44 @@
 			behavior: "smooth"
 		});
 	}, { passive: false });
-let startY = 0;
+let scrollDelta = 0;
+let isScrolling = false;
 
+function scrollHandler() {
+	if (scrollDelta !== 0) {
+		window.scrollBy(0, scrollDelta);
+		scrollDelta = 0;
+	}
+	isScrolling = false;
+}
+
+function requestScroll(delta) {
+	scrollDelta += delta;
+	if (!isScrolling) {
+		isScrolling = true;
+		requestAnimationFrame(scrollHandler);
+	}
+}
+
+// Mouse wheel
+window.addEventListener("wheel", function(e) {
+	e.preventDefault();
+	requestScroll(e.deltaY);
+}, { passive: false });
+
+// Touch scroll
+let startY = 0;
 window.addEventListener("touchstart", function(e) {
 	startY = e.touches[0].clientY;
 }, { passive: false });
 
 window.addEventListener("touchmove", function(e) {
-	e.preventDefault(); // Prevent default scroll
-	let deltaY = e.touches[0].clientY - startY;
-
-	window.scrollBy({
-		top: -deltaY * 2, // Invert sign if scrolling feels reversed
-		behavior: "smooth"
-	});
-
+	e.preventDefault();
+	let deltaY = startY - e.touches[0].clientY;
+	requestScroll(deltaY);
 	startY = e.touches[0].clientY;
 }, { passive: false });
+
 
   </script>
 
